@@ -57,59 +57,114 @@ public class FinalProdject {
 
         throw new RuntimeException("Invalid operator");
     }
-
-  public static void printPrettyTree(Node root) {
+    public static void printPrettyTree(Node root) {
     int height = getHeight(root);
-    int width = (int) Math.pow(2, height) * 2;
+    int width = (int) Math.pow(2, height) * 3;
 
-    List<StringBuilder> lines = new ArrayList<>();
-    for (int i = 0; i < height * 2; i++) {
-        StringBuilder line = new StringBuilder();
-        for (int j = 0; j < width; j++) {
-            line.append(" ");
-        }
-        lines.add(line);
+     printLevel(Collections.singletonList(root), 1, height, width);
     }
 
-    fillTree(lines, root, 0, width / 2, width / 4);
-
-    for (StringBuilder line : lines) {
-        System.out.println(line.toString());
-    }
-}
-
-  public static void printBranches(Node node) {
-    if (node.left != null) System.out.print(" / ");
-    else System.out.print("  ");
-    if (node.right != null) System.out.print(" \\ ");
-    else System.out.print("  ");
-
-    System.out.println();
-  }
-  public static void fillTree(List<StringBuilder> lines, Node node, int row, int col, int gap) {
-    if (node == null) return;
-
-    String val = node.value;
-    for (int i = 0; i < val.length(); i++) {
-        lines.get(row).setCharAt(col + i, val.charAt(i));
-    }
-
-    if (node.left != null) {
-        lines.get(row + 1).setCharAt(col - gap, '/');
-        fillTree(lines, node.left, row + 2, col - gap * 2, gap / 2);
-    }
-
-    if (node.right != null) {
-        lines.get(row + 1).setCharAt(col + gap, '\\');
-        fillTree(lines, node.right, row + 2, col + gap * 2, gap / 2);
-    }
-}
+ 
+    
     public static int getHeight(Node node) {
         if (node == null) return 0;
         return 1 + Math.max(getHeight(node.left), getHeight(node.right));
     }
+    public static void fillTree(List<StringBuilder> lines, Node node, int row, int col, int gap) {
+    if (node == null) return;
 
+    // Prevent gap from becoming 0 or negative
+    if (gap < 1) gap = 1;
 
+    String val = node.value;
+
+    // Place node value safely
+    for (int i = 0; i < val.length(); i++) {
+        if (col + i >= 0 && col + i < lines.get(row).length()) {
+            lines.get(row).setCharAt(col + i, val.charAt(i));
+        }
+    }
+
+    // Left branch
+    if (node.left != null) {
+        if (col - gap >= 0) {
+            lines.get(row + 1).setCharAt(col - gap, '/');
+        }
+        fillTree(lines, node.left, row + 2, col - gap * 2, gap / 2);
+    }
+
+    // Right branch
+    if (node.right != null) {
+        if (col + gap < lines.get(row).length()) {
+            lines.get(row + 1).setCharAt(col + gap, '\\');
+        }
+        fillTree(lines, node.right, row + 2, col + gap * 2, gap / 2);
+    }
+}
+public static void printLevel(List<Node> nodes, int level, int maxLevel, int width) {
+    if (nodes.isEmpty() || isAllNull(nodes)) return;
+
+    int floor = maxLevel - level;
+    int edgeLines = (int) Math.pow(2, Math.max(floor - 1, 0));
+    int firstSpaces = (int) Math.pow(2, floor) * 2;
+    int betweenSpaces = (int) Math.pow(2, floor + 1) * 1;
+
+    printSpaces(firstSpaces);
+
+    List<Node> newNodes = new ArrayList<>();
+    for (Node node : nodes) {
+        if (node != null) {
+            System.out.print(node.value);
+            newNodes.add(node.left);
+            newNodes.add(node.right);
+        } else {
+            System.out.print(" ");
+            newNodes.add(null);
+            newNodes.add(null);
+        }
+        printSpaces(betweenSpaces);
+    }
+    System.out.println();
+
+    // print branches
+    for (int i = 1; i <= edgeLines; i++) {
+        for (int j = 0; j < nodes.size(); j++) {
+            printSpaces(firstSpaces - i);
+
+            if (nodes.get(j) == null) {
+                printSpaces(edgeLines * 2 + i + 1);
+                continue;
+            }
+
+            if (nodes.get(j).left != null)
+                System.out.print("/");
+            else
+                printSpaces(1);
+
+            printSpaces(i * 2 - 1);
+
+            if (nodes.get(j).right != null)
+                System.out.print("\\");
+            else
+                printSpaces(1);
+
+            printSpaces(edgeLines * 2 - i);
+        }
+        System.out.println();
+    }
+
+    printLevel(newNodes, level + 1, maxLevel, width);
+}
+public static void printSpaces(int count) {
+    for (int i = 0; i < count; i++) System.out.print(" ");
+}
+
+public static boolean isAllNull(List<Node> list) {
+    for (Node node : list) {
+        if (node != null) return false;
+    }
+    return true;
+}
 }
 
 class Token {
