@@ -57,56 +57,81 @@ public class FinalProdject {
 
         throw new RuntimeException("Invalid operator");
     }
-    public static void printPrettyTree(Node root) {
-    int height = getHeight(root);
-    int width = (int) Math.pow(2, height) * 3;
-
-     printLevel(Collections.singletonList(root), 1, height, width);
-    }
-
- 
-    
     public static int getHeight(Node node) {
         if (node == null) return 0;
         return 1 + Math.max(getHeight(node.left), getHeight(node.right));
     }
-    public static void fillTree(List<StringBuilder> lines, Node node, int row, int col, int gap) {
-    if (node == null) return;
 
-    // Prevent gap from becoming 0 or negative
-    if (gap < 1) gap = 1;
+    public static void printPrettyTree(Node root) {
+    int height = getHeight(root);
+    int width = (int) Math.pow(2, height ) * 3;
+
+      List<StringBuilder> lines = new ArrayList<>();
+    for (int i = 0; i < height * 2 - 1; i++) {
+        // For Java 8 compatibility (no String.repeat())
+        StringBuilder sb = new StringBuilder();
+        for (int j = 0; j < width; j++) sb.append(' ');
+        lines.add(sb);
+    }
+     fillTree(lines, root, 0, width / 2, width / 5);
+    
+    for (StringBuilder line : lines) {
+        // Trim trailing spaces only
+        String str = line.toString();
+        int end = str.length();
+        while (end > 0 && str.charAt(end - 1) == ' ') end--;
+        System.out.println(str.substring(0, end));
+    }
+}
+public static void fillTree(List<StringBuilder> lines, Node node, int row, int col, int gap) {
+    if (node == null || row >= lines.size()) return;
 
     String val = node.value;
 
-    // Place node value safely
+    // Center the value at col
+    int startPos = col - val.length() / 2;
     for (int i = 0; i < val.length(); i++) {
-        if (col + i >= 0 && col + i < lines.get(row).length()) {
-            lines.get(row).setCharAt(col + i, val.charAt(i));
+        int pos = startPos + i;
+        if (pos >= 0 && pos < lines.get(row).length()) {
+            lines.get(row).setCharAt(pos, val.charAt(i));
         }
     }
 
-    // Left branch
-    if (node.left != null) {
-        if (col - gap >= 0) {
-            lines.get(row + 1).setCharAt(col - gap, '/');
-        }
-        fillTree(lines, node.left, row + 2, col - gap * 2, gap / 2);
-    }
+    // Draw branches and recurse
+    if (row + 1 < lines.size()) {
 
-    // Right branch
-    if (node.right != null) {
-        if (col + gap < lines.get(row).length()) {
-            lines.get(row + 1).setCharAt(col + gap, '\\');
+        int newGap = Math.max(1, gap / 2);
+        // Left branch
+        if (node.left != null) {
+            int leftCol = col - gap;
+            if (leftCol >= 0 && leftCol < lines.get(row + 1).length()) {
+                lines.get(row + 1).setCharAt(leftCol, '/');
+            }
+            // FIXED: Use leftCol (where the branch is), not col - gap * 2
+            fillTree(lines, node.left, row + 2, leftCol, newGap);
         }
-        fillTree(lines, node.right, row + 2, col + gap * 2, gap / 2);
+
+        // Right branch
+        if (node.right != null) {
+            int rightCol = col + gap;
+            if (rightCol >= 0 && rightCol < lines.get(row + 1).length()) {
+                lines.get(row + 1).setCharAt(rightCol, '\\');
+            }
+            // FIXED: Use rightCol (where the branch is), not col + gap * 2
+            fillTree(lines, node.right, row + 2, rightCol, newGap);
+        }
     }
 }
+
+ 
+    
+   
 public static void printLevel(List<Node> nodes, int level, int maxLevel, int width) {
     if (nodes.isEmpty() || isAllNull(nodes)) return;
 
     int floor = maxLevel - level;
     int edgeLines = (int) Math.pow(2, Math.max(floor - 1, 0));
-    int firstSpaces = (int) Math.pow(2, floor) * 2;
+    int firstSpaces = (int) Math.pow(2, floor) ;
     int betweenSpaces = (int) Math.pow(2, floor + 1) * 1;
 
     printSpaces(firstSpaces);
