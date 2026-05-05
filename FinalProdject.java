@@ -174,28 +174,38 @@ public class FinalProdject {
         }
 
         // 🔥 UPDATED METHOD HERE
-        public Node expression() {
-            Node node = term();
+       public Node expression() {
+    Node node = term();
 
-            while (peek() != null && (peek().value.equals("+") || peek().value.equals("-"))) {
-                Token op = consume();
+    while (peek() != null && (peek().value.equals("+") || peek().value.equals("-"))) {
+        Token op = consume();
 
-                Node newNode = new Node(op.value);
-                newNode.left = node;
+        Node newNode = new Node(op.value);
+        newNode.left = node;
 
-                // 🔥 Handle "++" as "+1"
-                if (peek() != null && peek().value.equals("+")) {
-                    consume(); // consume second '+'
-                    newNode.right = new Node("1");
-                } else {
-                    newNode.right = term();
-                }
-
-                node = newNode;
+        // 🔥 Handle ++ and --
+        if (peek() != null && peek().type.equals("OP")) {
+            if (peek().value.equals("+")) {
+                consume(); // second '+'
+                newNode.right = new Node("1"); // +1
+            } 
+            else if (peek().value.equals("-")) {
+                consume(); // second '-'
+                newNode.right = new Node("1"); // subtract 1
+            } 
+            else {
+                newNode.right = term();
             }
-
-            return node;
+        } 
+        else {
+            newNode.right = term();
         }
+
+        node = newNode;
+    }
+
+    return node;
+}
 
         private Node term() {
             Node node = factor();
